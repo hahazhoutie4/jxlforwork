@@ -9,7 +9,6 @@ public class MainInformation {
 	 */
 	public MainInformation() {
 	}
-		
 	private List<String> floor_information;// 楼层号
 	private List<String> names; // 工程量名称
 		/**

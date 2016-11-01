@@ -42,7 +42,6 @@ public class Const {
 	 * @param Q_9 地上工程量
 	 */
 	public final static String Q_9="ground";
-	
 	public final static String L_1="";
 	public final static String L_2="";
 	public final static String L_3="";

@@ -1,7 +1,6 @@
 package com.zhoutong.jxl;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -13,9 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
+import java.util.SortedSet;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -27,17 +24,11 @@ import javax.swing.JTextArea;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
 import com.zhoutong.properties.Information;
-import com.zhoutong.properties.Property;
 import com.zhoutong.sql.Persistent;
-
 import jxl.read.biff.BiffException;
 
 public class Test extends JFrame implements ActionListener {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5583230886775036859L;
 	/**
 	 * @author hahazhoutie4
@@ -56,6 +47,8 @@ public class Test extends JFrame implements ActionListener {
 	private JButton jb_select;
 	private JButton jb_overwrite;
 	private static JTextArea ja;
+	private Map<String, String> information;
+	private OutputExcel outputExcel;
 	static {
 		ja = new JTextArea();
 		ja.setEditable(false);
@@ -63,22 +56,18 @@ public class Test extends JFrame implements ActionListener {
 	private MouseListener mouseListener = new MouseListener() {
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			// TODO Auto-generated method stub
 		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
-			// TODO Auto-generated method stub
 		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
 		}
 
 		@Override
 		public void mouseEntered(MouseEvent e) {
-			// TODO Auto-generated method stub
 		}
 
 		@Override
@@ -86,7 +75,6 @@ public class Test extends JFrame implements ActionListener {
 		 * @param button_name 选择的构件类型,如：墙、柱、梁、板
 		 */
 		public void mouseClicked(MouseEvent e) {
-			// TODO Auto-generated method stub
 			JButton jbutton_click = (JButton) e.getComponent();
 			String flag = jbutton_click.getText();
 			String button_name = Test.this.jc.getSelectedItem().toString();
@@ -122,14 +110,18 @@ public class Test extends JFrame implements ActionListener {
 				File select_file = chooser.getSelectedFile(); // 获取到的文件
 				if (null != select_file) {
 					ja.setText(select_file.getName());
-					Map<String, String> information = new Information()
-							.getInformation(select_file);
+					information = new Information().getInformation(select_file);
+					Map<String, SortedSet<String>> map_information = new Information()
+							.getConcrete(information);
 					p.insert_other_information(forwork, information); // 此处插入了混凝土强度等级
+					Map<String, String> mp_001 = p.getC_1(forwork,
+							map_information);
+					OutputExcel.getOutputExcel().CreateTable(mp_001,
+							"C:\\Users\\zhoutong\\Desktop\\工程量汇总\\1.xls");
 					jp2.remove(jb_select);
 					jp2.remove(ja);
 					jp2.repaint();
 					jp2.revalidate();
-
 				} else {
 					ja.setText(""); // 未选择任何文件
 				}
@@ -170,13 +162,16 @@ public class Test extends JFrame implements ActionListener {
 		JTextArea jt = new JTextArea();
 		jt.setText("当前选择的工程量:" + forwork.getSheet_name());
 		jp.add(jt);
-		MainInformation mainInformation = forwork.getMainInformation();
-		List<String> floor_information = mainInformation.getFloor_information();
-
+		Information information_001 = new Information();
+		Map<String, String> map_information = p.getC_1(forwork,
+				information_001.getConcrete(information));
+		if (null == outputExcel) {
+			outputExcel = OutputExcel.getOutputExcel();
+		}
+		outputExcel.CreateTable(map_information, forwork.createFileName());
 	}
 
 	protected void invoke_name(String sheet_name) {
-		// TODO Auto-generated method stub
 		forwork.getSheetContent(sheet_name);
 		MainInformation mainInformation = forwork.getMainInformation();
 		System.out.println(forwork.getNames().length);
@@ -186,6 +181,7 @@ public class Test extends JFrame implements ActionListener {
 		}
 		p.createTable(forwork);
 		boolean s = p.isDataExist(forwork);
+		System.out.println("s的值为"+s);
 		if (s) {
 			jb_overwrite = new JButton("覆盖数据？");
 			jp1.add(jb_overwrite);
@@ -209,14 +205,8 @@ public class Test extends JFrame implements ActionListener {
 		jbutton.addActionListener(this);
 	}
 
-	public static void main(String[] args) {
-		Test test = new Test();
-		test.setMainFrame();
-	}
-
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		chooser.setCurrentDirectory(new File("I:\\报业主结算书\\2、清单结算\\工程量汇总表格（做完删）"));
 		chooser.showDialog(new JLabel(), "选择");
@@ -226,7 +216,6 @@ public class Test extends JFrame implements ActionListener {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					// TODO Auto-generated method stub
 					JWindow.getWindows()[0].setVisible(false);
 					new Test().setInformationframe(Test.this.invoke(url));
 				}
@@ -235,12 +224,10 @@ public class Test extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * 
 	 * @param names
 	 *            获取到的表单名称
 	 */
 	protected void setInformationframe(String[] names) {
-		// TODO Auto-generated method stub
 		JSplitPane js = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		js.setEnabled(false);
 		jp1 = new JPanel();
@@ -268,15 +255,18 @@ public class Test extends JFrame implements ActionListener {
 	}
 
 	protected String[] invoke(String url) {
-		// TODO Auto-generated method stub
 		forwork = new ForWork();
 		try {
 			forwork.Initialized(url);
 			return forwork.getNames();
 		} catch (BiffException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public static void main(String[] args) {
+		Test test = new Test();
+		test.setMainFrame();
 	}
 }

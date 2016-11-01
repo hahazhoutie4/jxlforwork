@@ -35,14 +35,20 @@ public class Information {
 		}
 		return map;
 	}
-	public SortedSet<Integer> getConcrete(Map<String,String> map){
-			SortedSet<Integer> set=new TreeSet<Integer>();
+	public Map<String,SortedSet<String>> getConcrete(Map<String,String> map){
+		Map<String,SortedSet<String>> map_001=new HashMap<String, SortedSet<String>>();
+			SortedSet<String> set_001 = new TreeSet<String>();
+			SortedSet<String> set_002=new TreeSet<String>();
 			Set<String> key=map.keySet();
 			for(String q:key){
 				if(!q.equals("基础层")&&!String.valueOf(q.charAt(1)).equals("-")){
-						set.add(Integer.valueOf(map.get(q).split("C")[1]));
+						set_001.add(map.get(q).split("C")[1]);
+				}else{
+					set_002.add(map.get(q).split("C")[1]);
 				}
 			}
-			return set;			//获取到地下室楼层的混凝土强度等级表列,如：C30-C35-C40-C45,获取到的值为30-35-40-45，此处为已经排序的混凝土强度等级
+			map_001.put("地下工程量", set_001);
+			map_001.put("地上工程量",set_002);
+			return map_001;			//获取到地下室楼层的混凝土强度等级表列,如：C30-C35-C40-C45,获取到的值为30-35-40-45，此处为已经排序的混凝土强度等级
 	}	
 }

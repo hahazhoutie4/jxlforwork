@@ -1,26 +1,31 @@
 package com.zhoutong.test;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.io.File;
+import java.io.IOException;
+
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 
 public class DBtest {
 	/**
 	 *@author hahazhoutie4
+	 * @throws IOException 
+	 * @throws BiffException 
 	 *@website cnblogs.com/hahazhoutie4-blogs/
 	 */
-	private Connection connection;
-	private void getConnection(){
+	public static void main(String[] args)   {
+		Workbook workbook;
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			 connection=DriverManager.getConnection("jdbc:mysql://localhost:3305/forwork","root","jintian123");
-		} catch (ClassNotFoundException | SQLException e) {
+			workbook = Workbook.getWorkbook(new File("I:\\报业主结算书\\2、清单结算\\工程量汇总表格（做完删）\\1#土建工程量.xls"));
+			Sheet sheet=workbook.getSheet(0);
+			Cell[] cells=sheet.getColumn(2);
+			System.out.println(cells[3].getContents().toString());
+		} catch (BiffException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("fail to connect mysql");
 		}
-	}
-	public static void main(String[] args) {
-		System.out.println(" 楼层"+" not like "+"'"+"_-%"+"'"+" and 楼层"+" <>"+" '"+"基础层"+"'");
+				
 	}
 }
